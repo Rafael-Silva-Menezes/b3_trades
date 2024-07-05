@@ -21,3 +21,31 @@
 go.work
 go.work.sum
 
+# Ignore .env files in b3-insert and b3-api
+b3-insert/.env
+b3-api/.env
+
+# Ignore .idea folder
+.idea/
+
+# Ignore Go binary files
+/bin/
+/obj/
+/out/
+
+# Ignore Go dependencies
+vendor/
+
+# Ignore system temporary files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+*.log
+
+# Ignore build outputs
+*.app
+
+# Ignore editor temporary files
+*.swp
+*~
