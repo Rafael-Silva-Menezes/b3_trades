@@ -32,7 +32,7 @@ b3-api/.env
 /bin/
 /obj/
 /out/
-
+.env
 # Ignore Go dependencies
 vendor/
 
