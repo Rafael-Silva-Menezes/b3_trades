@@ -1,122 +1,122 @@
-# Aplicação B3 Trades
+# B3 Trades Application
 
-## Visão Geral
+## Overview
 
-A aplicação B3 Trades foi desenvolvida para processar arquivos de dados de negociações financeiras da B3 (Bolsa de Valores do Brasil) 
-e inseri-los em um banco de dados PostgreSQL. E disponobiliza-los via api, permitindo a consulta dos seguintes dados:
+The B3 Trades application was developed to process financial trading data files from B3 (Brazilian Stock Exchange) 
+and insert them into a PostgreSQL database. It also provides this data via an API, allowing queries for the following data:
 ```json
 {
-   "ticker": "PETR4" ,
-   "max_range_value": 0, 
-   "max_daily_volume": 0, 
-   "QuantidadeNegociada": 1000 
+   "ticker": "PETR4",
+   "max_range_value": 0,
+   "max_daily_volume": 0,
+   "TradedQuantity": 1000
 }
 ```
 
-## Funcionalidades
+## Features
 
-A aplicação realiza as seguintes tarefas:
+The application performs the following tasks:
 
-- Lê arquivos de dados de negociações financeiras de um diretório especificado.
-- Faz o parsing e processamento dos dados em objetos estruturados do tipo `Trade`.
-- Insere lotes de dados do tipo `Trade` no banco de dados PostgreSQL.
-- Suporta concorrência para otimizar o processamento de arquivos usando goroutines.
-- Limpa a tabela do banco de dados antes de inserir novos dados.
+- Reads financial trading data files from a specified directory.
+- Parses and processes the data into structured `Trade` objects.
+- Inserts batches of `Trade` data into the PostgreSQL database.
+- Supports concurrency to optimize file processing using goroutines.
+- Clears the database table before inserting new data.
 
-```
+```go
 type Trade struct {
-	ID              string    // ID único do trade
-	Ticker          string    // Código do instrumento
-	TradePrice      float64   // Preço da negociação
-	TradedQuantity  int       // Quantidade negociada
-	ClosingTime     string    // Horário de fechamento da negociação (formato string)
-	TradeDate       time.Time // Data da negociação
+	ID              string    // Unique trade ID
+	Ticker          string    // Instrument code
+	TradePrice      float64   // Trade price
+	TradedQuantity  int       // Traded quantity
+	ClosingTime     string    // Trade closing time (string format)
+	TradeDate       time.Time // Trade date
 }
 ```
 
-## Como Funciona
+## How It Works
 
-1. **Configuração Inicial**:
-    - Clone o repositório e navegue até o diretório do projeto.
-    - Verifique se o Go está instalado (`go version` deve retornar uma versão válida).
-    - Instale o PostgreSQL e Docker, se ainda não estiverem instalados.
+1. **Initial Setup**:
+    - Clone the repository and navigate to the project directory.
+    - Ensure that Go is installed (`go version` should return a valid version).
+    - Install PostgreSQL and Docker if they are not already installed.
 
-2. **Preparação dos Arquivos de Dados**:
-    - Baixe os arquivos de dados de negociações financeiras do site oficial da [B3](https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/cotacoes/cotacoes/).
-    - Salve os arquivos baixados em um diretório de sua escolha.
-    - Lembre-se de anotar o caminho do diretório para colocar no DIRECTORY_PATH
+2. **Preparing Data Files**:
+    - Download financial trading data files from the official [B3](https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/cotacoes/cotacoes/) website.
+    - Save the downloaded files to a directory of your choice.
+    - Note the directory path to set in `DIRECTORY_PATH`.
 
-3. **Configuração do Ambiente**:
-    - Crie um arquivo `.env` na raíz do projeto, para guardar as informações do banco de dados
+3. **Environment Configuration**:
+    - Create a `.env` file at the root of the project to store database information:
       ```dotenv
-      # Configurações do PostgreSQL
-      POSTGRES_USER=seu_usuario_postgres
-      POSTGRES_PASSWORD=sua_senha_postgres
-      POSTGRES_DB=seu_banco_postgres
+      # PostgreSQL configuration
+      POSTGRES_USER=your_postgres_user
+      POSTGRES_PASSWORD=your_postgres_password
+      POSTGRES_DB=your_postgres_db
       POSTGRES_HOST=db
       POSTGRES_PORT=5432
       ```
-    - Crie um arquivo `.env` no b3-insert e preencha da seguinte forma.
-    - Substitua `/caminho/para/seus/arquivos/b3` pelo caminho real onde você salvou os arquivos da B3.
-   ```dotenv
-      # Caminho do diretório dos arquivos
-      DIRECTORY_PATH=/caminho/para/seus/arquivos/b3
-      # Número máximo de workers (processamento concorrente)
+    - Create a `.env` file in `b3-insert` and fill it as follows:
+    - Replace `/path/to/your/files/b3` with the actual path where you saved the B3 files.
+    ```dotenv
+      # Directory path for files
+      DIRECTORY_PATH=/path/to/your/files/b3
+      # Maximum number of workers (concurrent processing)
       MAX_WORKERS=20
-      # URL do Banco de Dados PostgreSQL
-      DATABASE_URL=postgres://user:pass@host:$5432/postgres?sslmode=disable
-   ```
- - Crie um arquivo `.env` no b3-api e preencha da seguinte forma.
-   ```dotenv
-      # Configuração da Api
+      # PostgreSQL Database URL
+      DATABASE_URL=postgres://user:pass@host:5432/postgres?sslmode=disable
+    ```
+    - Create a `.env` file in `b3-api` and fill it as follows:
+    ```dotenv
+      # API Configuration
       APP_PORT=8080
-      # URL do Banco de Dados PostgreSQL
-      DATABASE_URL=postgres://user:pass@host:$5432/postgres?sslmode=disable
-   ```
+      # PostgreSQL Database URL
+      DATABASE_URL=postgres://user:pass@host:5432/postgres?sslmode=disable
+    ```
 
-4. **Configuração do Docker**:
-    - Certifique-se de que o Docker está em execução no seu sistema.
-    - Use o arquivo `docker-compose.yml` fornecido para inicializar o banco de dados PostgreSQL.
+4. **Docker Configuration**:
+    - Ensure that Docker is running on your system.
+    - Use the provided `docker-compose.yml` file to start the PostgreSQL database:
       ```bash
       docker compose up
       ```
-5. **Execução do B3-Insert**:
-    - Compile e execute a aplicação `b3-insert`:
+
+5. **Running B3-Insert**:
+    - Build and run the `b3-insert` application:
       ```bash
       go build -o b3-insert ./cmd
       ./b3-insert
       ```
-    - Para executar sem compilar, basta o seguinte comando:
-   ```bash
+    - To run without building, use:
+      ```bash
       go run ./cmd/main.go
       ```
-    - A aplicação começará a processar os arquivos do diretório especificado, inserindo os dados no banco de dados PostgreSQL.
+    - The application will start processing files from the specified directory, inserting data into the PostgreSQL database.
 
-
-6. **Execução do B3-Api**:
-  - Compile e execute a aplicação `b3-api`:
+6. **Running B3-Api**:
+    - Build and run the `b3-api` application:
       ```bash
       go build -o b3-api ./cmd
-      ./b3-insert
+      ./b3-api
       ```
-- Para executar sem compilar, basta o seguinte comando:
-   ```bash
+    - To run without building, use:
+      ```bash
       go run ./cmd/main.go
-   ```
-- Uma vez que `b3-api` esteja em execução (via Docker), você pode acessá-lo através de `http://localhost:8080` (considerando a configuração padrão).
+      ```
+    - Once `b3-api` is running (via Docker), you can access it at `http://localhost:8080` (assuming the default configuration).
 
-- Exemplo de requisição curl:
-```bash
-curl -X GET \                              
-  'http://localhost:8000/api/aggregated-data/PETR4?date=2024-06-28' \
-  -H 'Content-Type: application/json'
-```
+    - Example curl request:
+    ```bash
+    curl -X GET \
+      'http://localhost:8080/api/aggregated-data/PETR4?date=2024-06-28' \
+      -H 'Content-Type: application/json'
+    ```
 
-7. **Parando a Aplicação**:
-    - Para parar o banco de dados use o comando `docker compose down`
-    - Para parar a aplicação, utilize `Ctrl + C` no terminal onde ela está sendo executada.
+7. **Stopping the Application**:
+    - To stop the database, use the command `docker compose down`.
+    - To stop the application, use `Ctrl + C` in the terminal where it is running.
 
-## Notas Adicionais
+## Additional Notes
 
-- Certifique-se de ter permissões suficientes e espaço em disco para as operações de banco de dados e processamento de dados.
-- Ajuste o valor de `MAX_WORKERS` no arquivo `.env` de acordo com as capacidades do seu sistema e requisitos de desempenho.
+- Ensure you have sufficient permissions and disk space for database operations and data processing.
+- Adjust the `MAX_WORKERS` value in the `.env` file according to your system's capabilities and performance requirements.
